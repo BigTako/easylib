@@ -10,5 +10,14 @@ services:
       - '5432:5432'
     volumes:
       - postgres-data:/var/lib/postgresql/data
+  test-postgres:
+    image: postgres
+    environment:
+      POSTGRES_USER: developer
+      POSTGRES_PASSWORD: dev_pass
+      POSTGRES_DB: test-easylib
+      PGPORT: 5434
+    ports:
+      - '5434:5434'
 volumes:
   postgres-data:

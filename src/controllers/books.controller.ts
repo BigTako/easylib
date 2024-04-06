@@ -10,11 +10,12 @@ export const getBooks = catchAsync(async (req: Request, res: Response) => {
 })
 
 export const createBook = catchAsync(async (req: Request, res: Response) => {
-  const { title, author } = req.body
+  const { title, author, description } = req.body
   const doc = await prisma.book.create({
     data: {
       title,
-      author
+      author,
+      description
     }
   })
   res.status(201).json(doc)
