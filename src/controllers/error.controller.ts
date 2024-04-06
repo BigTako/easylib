@@ -1,15 +1,12 @@
 import { Request, Response, NextFunction } from 'express'
+import { AppError } from '../utils/appError'
 
-export const errorController = (
-  err: { stack: string; message: string },
-  req: Request,
-  res: Response,
-  next: NextFunction
-) => {
+export const errorController = (err: AppError, req: Request, res: Response, next: NextFunction) => {
+  const { message, statusCode } = err
   console.error(err.stack)
   res.status(500).json({
-    status: 'error',
-    message: err.message
+    statusCode,
+    message
   })
   next()
 }
