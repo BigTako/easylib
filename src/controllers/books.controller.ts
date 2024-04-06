@@ -1,6 +1,8 @@
-import { Request, Response } from 'express'
+import { NextFunction, Request, Response } from 'express'
 import { catchAsync } from '../utils/catchAsync'
 import { prisma } from '../utils/db'
+import { AppError } from '../utils/appError'
+import { Prisma } from '@prisma/client'
 
 export const getBooks = catchAsync(async (req: Request, res: Response) => {
   const docs = await prisma.book.findMany()
@@ -8,7 +10,6 @@ export const getBooks = catchAsync(async (req: Request, res: Response) => {
 })
 
 export const createBook = catchAsync(async (req: Request, res: Response) => {
-  console.log({ body: req.body })
   const { title, author } = req.body
   const doc = await prisma.book.create({
     data: {
@@ -19,17 +20,26 @@ export const createBook = catchAsync(async (req: Request, res: Response) => {
   res.status(201).json(doc)
 })
 
-export const updateBook = catchAsync(async (req: Request, res: Response) => {
+export const updateBook = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
   const { id } = req.params
   const { title, author } = req.body
-  const doc = await prisma.book.update({
-    where: { id },
-    data: {
-      title,
-      author
+
+  try {
+    const doc = await prisma.book.update({
+      where: { id },
+      data: {
+        title,
+        author
+      }
+    })
+    res.status(200).json(doc)
+  } catch (error) {
+    console.log(error)
+    if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2025') {
+      return next(new AppError(['No document found with that ID'], 404))
     }
-  })
-  res.status(200).json(doc)
+    throw error
+  }
 })
 
 export const deleteBook = catchAsync(async (req: Request, res: Response) => {

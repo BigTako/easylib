@@ -15,9 +15,9 @@ datasource db {
 
 model Book {
   id          String   @id @default(cuid())
-  title       String
-  author      String
-  description String?
+  title       String   @db.VarChar(128)
+  author      String   @db.VarChar(64)
+  description String?  @db.Text
   createdAt   DateTime @default(now())
 
   @@map("book")
