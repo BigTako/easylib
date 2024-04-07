@@ -23,7 +23,7 @@ export const protect = catchAsync(async (req: Request, res: Response, next: Next
   }
 
   if (!token) {
-    return res.status(401).json({ message: 'You are not logged in' })
+    return next(new AppError(['You are not logged in'], 401))
   }
 
   try {
@@ -37,6 +37,6 @@ export const protect = catchAsync(async (req: Request, res: Response, next: Next
 
     return next(new AppError(['Invalid token'], 401))
   } catch (err) {
-    return next(new AppError(['Token has expired'], 401))
+    return next(new AppError(['Token is invalid or has expired'], 401))
   }
 })

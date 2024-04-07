@@ -33,7 +33,7 @@ export const updateBook = catchAsync(async (req: Request, res: Response, next: N
         author
       }
     })
-    res.status(200).json(doc)
+    res.status(201).json(doc)
   } catch (error) {
     console.log(error)
     if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2025') {
