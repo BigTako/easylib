@@ -4,6 +4,9 @@ import request from 'supertest'
 import { app } from '../src/app'
 
 import { prisma } from '../src/utils/db'
+import { errorMessage } from '../src/utils/errorMessages'
+
+const { STRLEN_MIN, FIELD_REQUIRED, UNAUTHORIZED, INVALID_TOKEN } = errorMessage
 
 beforeAll(async () => {
   await prisma.$connect()
@@ -23,6 +26,11 @@ describe('Books routes', () => {
     description: 'Test Description'
   }
 
+  test('throws NotFound trying to access non-existent route', async () => {
+    const res = await request(app).get('/api/invalid')
+    expect(res.status).toBe(404)
+  })
+
   test('gets jwt token', async () => {
     const res = await request(app).get('/api/auth/token')
     expect(res.status).toBe(200)
@@ -33,7 +41,7 @@ describe('Books routes', () => {
   test('throws BadRequest trying to access route with invalid token', async () => {
     const res = await request(app).post('/api/books').set('Authorization', `Bearer ${'1234'}`).send(testBook)
     expect(res.status).toBe(401)
-    expect(res.body.messages).toContain('Token is invalid or has expired')
+    expect(res.body.messages).toContain(INVALID_TOKEN)
   })
 
   test('gets all books', async () => {
@@ -51,7 +59,7 @@ describe('Books routes', () => {
   test('throws Unauthorized error trying to create a book without JWT', async () => {
     const res = await request(app).post('/api/books').send(testBook)
     expect(res.status).toBe(401)
-    expect(res.body.messages as string[]).toContain('You are not logged in')
+    expect(res.body.messages as string[]).toContain(UNAUTHORIZED)
   })
 
   test('creates a book with missing fields', async () => {
@@ -71,7 +79,7 @@ describe('Books routes', () => {
       .send({ ...testBook, title: undefined, author: undefined })
 
     expect(res.status).toBe(400)
-    expect(res.body.messages).toEqual(['Title is required', 'Author`s name is required'])
+    expect(res.body.messages).toEqual([FIELD_REQUIRED('Title'), FIELD_REQUIRED('Author`s name')])
   })
 
   test('throws BadRequest trying to create a book with invalid body', async () => {
@@ -81,10 +89,7 @@ describe('Books routes', () => {
       .send({ ...testBook, title: '', author: '' })
 
     expect(res.status).toBe(400)
-    expect(res.body.messages).toEqual([
-      'Title must be at least 1 character long',
-      'Author`s name must be at least 1 character long'
-    ])
+    expect(res.body.messages).toEqual([STRLEN_MIN('Title', 1), STRLEN_MIN('Author`s name', 1)])
   })
 
   test('throws Unauthorized trying to update book without token', async () => {
@@ -98,7 +103,7 @@ describe('Books routes', () => {
     const res = await request(app).put(`/api/books/${id}`).send({ title: 'New title' })
 
     expect(res.status).toBe(401)
-    expect(res.body.messages).toContain('You are not logged in')
+    expect(res.body.messages).toContain(UNAUTHORIZED)
   })
 
   test('throws BadRequest trying to update book with invalid body', async () => {
@@ -115,10 +120,7 @@ describe('Books routes', () => {
       .send({ title: '', author: '' })
 
     expect(res.status).toBe(400)
-    expect(res.body.messages).toEqual([
-      'Title must be at least 1 character long',
-      'Author`s name must be at least 1 character long'
-    ])
+    expect(res.body.messages).toEqual([STRLEN_MIN('Title', 1), STRLEN_MIN('Author`s name', 1)])
   })
 
   test('updates book by id', async () => {
@@ -149,7 +151,7 @@ describe('Books routes', () => {
     const res = await request(app).delete(`/api/books/${id}`)
 
     expect(res.status).toBe(401)
-    expect(res.body.messages).toContain('You are not logged in')
+    expect(res.body.messages).toContain(UNAUTHORIZED)
   })
 
   test('deletes book by id', async () => {

@@ -3,6 +3,7 @@ import { catchAsync } from '../utils/catchAsync'
 import { prisma } from '../utils/db'
 import { AppError } from '../utils/appError'
 import { Prisma } from '@prisma/client'
+import { errorMessage } from '../utils/errorMessages'
 
 export const getBooks = catchAsync(async (req: Request, res: Response) => {
   const docs = await prisma.book.findMany()
@@ -37,7 +38,7 @@ export const updateBook = catchAsync(async (req: Request, res: Response, next: N
   } catch (error) {
     console.log(error)
     if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2025') {
-      return next(new AppError(['No document found with that ID'], 404))
+      return next(new AppError([errorMessage.DOC_NOT_FOUND], 404))
     }
     throw error
   }

@@ -2,6 +2,7 @@ import { NextFunction, Request, Response } from 'express'
 import { catchAsync } from '../utils/catchAsync'
 import jwtLib from 'jsonwebtoken'
 import { AppError } from '../utils/appError'
+import { errorMessage } from '../utils/errorMessages'
 
 const userId = 'user id'
 
@@ -23,7 +24,7 @@ export const protect = catchAsync(async (req: Request, res: Response, next: Next
   }
 
   if (!token) {
-    return next(new AppError(['You are not logged in'], 401))
+    return next(new AppError([errorMessage.UNAUTHORIZED], 401))
   }
 
   try {
@@ -35,8 +36,8 @@ export const protect = catchAsync(async (req: Request, res: Response, next: Next
       return next()
     }
 
-    return next(new AppError(['Invalid token'], 401))
+    return next(new AppError([errorMessage.INVALID_TOKEN], 401))
   } catch (err) {
-    return next(new AppError(['Token is invalid or has expired'], 401))
+    return next(new AppError([errorMessage.INVALID_TOKEN], 401))
   }
 })
