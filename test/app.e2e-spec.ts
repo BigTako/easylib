@@ -1,5 +1,3 @@
-// const request = require('supertest')
-// const { app } = require('../src/app')
 process.env.NODE_ENV = 'test'
 
 import request from 'supertest'
